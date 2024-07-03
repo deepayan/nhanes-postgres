@@ -1,0 +1,30 @@
+
+## Use this to create a "flattened" image with a single layer (for
+## smaller image size)
+
+## https://stackoverflow.com/questions/22713551/how-to-flatten-a-docker-image
+
+# docker build --progress plain --shm-size=1024M --platform=linux/amd64 --tag nhanes-postgres-flat -f Container/Dockerfile.flatten .
+
+FROM nhanes-postgres:latest as builder
+
+WORKDIR /tmp
+
+# # # Copy startup script
+# RUN mkdir /startup
+# COPY Container/startup.sh /startup/startup.sh
+# RUN chmod 700 /startup/startup.sh
+
+FROM scratch
+COPY --from=builder / /
+
+COPY Container/postgres-rename.R /tmp/postgres-rename.R
+
+RUN service postgresql start \
+    && sleep 5 \
+    && Rscript /tmp/postgres-rename.R \
+    && service postgresql stop
+
+CMD ["/startup/startup.sh"]
+
+
