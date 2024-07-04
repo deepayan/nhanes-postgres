@@ -1,4 +1,4 @@
-# NHANES in Postrgres
+# NHANES in Postgres
 
 This repository contains R code and a Docker image definition that
 facilitate pulling the CDC's NHANES data files into a SQL DBMS. It is
