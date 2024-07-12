@@ -14,7 +14,7 @@ a PostgreSQL database containing data from NHANES.
 
 # Quick start
 
-To run the latest pre-built image, install docker and run
+To run the current pre-built image, install docker and run
 
 ```
 docker run --rm --name nhanes-pg -d \
@@ -23,7 +23,7 @@ docker run --rm --name nhanes-pg -d \
 	-p 5432:5432 \
 	-e 'CONTAINER_USER_USERNAME=test' \
 	-e 'CONTAINER_USER_PASSWORD=test' \
-	deepayansarkar/nhanes-postgresql:latest
+	deepayansarkar/nhanes-postgresql:0.1.4
 ```
 
 To map a local directory so that it becomes accessible within the
