@@ -58,6 +58,9 @@ RUN apt-get update \
 	       libsm6 \
 	       make \
 	       texinfo \
+	       texlive-latex-base \
+	       texlive-latex-recommended \
+	       fonts-noto \
 	       libtiff-dev \
 	       libpng-dev \
 	       libicu-dev \
@@ -179,16 +182,21 @@ RUN service postgresql start \
 # use the remotes package to manage installations
 RUN Rscript -e "install.packages('remotes')" \
     && Rscript -e "remotes :: install_github('cjendres1/nhanes@postgres-backend')" \
-    && Rscript -e "remotes :: install_github('ccb-hms/phonto@db-tests')"
+    && Rscript -e "remotes :: install_github('ainilaha/phonto')"
 
 
 # use the remotes package to manage installations
-RUN Rscript -e "install.packages(c('git2r', 'getPass', 'xlsx', 'forestplot', 'glmnet', 'glmpath', 'kableExtra', 'plotROC', 'sjPlot', 'survey', 'mitools', 'bookdown', 'lme4', 'survminer'))"
+RUN Rscript -e "install.packages(c('git2r', 'getPass', 'xlsx', 'forestplot', 'glmnet', 'glmpath', 'kableExtra', 'plotROC', 'sjPlot', 'survey', 'mitools', 'bookdown', 'lme4', 'survminer', 'DT', 'Hmisc', 'latticeExtra'))"
+
 
 # # allow modification of these locations so users can install R packages without warnings
 RUN chmod -R 777 /usr/local/lib/R/library
 RUN chmod -R 777 /usr/local/lib/R/site-library
 RUN chmod -R 777 /usr/local/lib/R/doc/html/packages.html
+
+
+
+
 
 ## Declare which version of the container this is, and make it
 ## available inside the container

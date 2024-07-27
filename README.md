@@ -59,7 +59,7 @@ useful ports in the container:
 
 # Building
 
-Build the docker image using
+Build the docker image using (but see below for the version using `time`)
 
 ```
 docker build --progress plain --shm-size=1024M --platform=linux/amd64 --tag nhanes-postgres -f Container/Dockerfile .
