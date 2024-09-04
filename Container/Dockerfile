@@ -194,18 +194,16 @@ RUN chmod -R 777 /usr/local/lib/R/library
 RUN chmod -R 777 /usr/local/lib/R/site-library
 RUN chmod -R 777 /usr/local/lib/R/doc/html/packages.html
 
-
-
-
-
-## Declare which version of the container this is, and make it
-## available inside the container
+## env variables identifying container (FIXME: get collection date from snapshot on GitHub)
+ENV EPICONDUCTOR_CONTAINER_DB postgres
 ENV EPICONDUCTOR_CONTAINER_VERSION v0.9.0
 ENV EPICONDUCTOR_COLLECTION_DATE 2024-02-12
 
+RUN echo "EPICONDUCTOR_CONTAINER_DB=$EPICONDUCTOR_CONTAINER_DB" >> /usr/local/lib/R/etc/Renviron.site
 RUN echo "EPICONDUCTOR_CONTAINER_VERSION=$EPICONDUCTOR_CONTAINER_VERSION" >> /usr/local/lib/R/etc/Renviron.site
 RUN echo "EPICONDUCTOR_COLLECTION_DATE=$EPICONDUCTOR_COLLECTION_DATE" >> /usr/local/lib/R/etc/Renviron.site
 
+RUN echo "EPICONDUCTOR_CONTAINER_DB=$EPICONDUCTOR_CONTAINER_DB" >> /etc/environment
 RUN echo "EPICONDUCTOR_CONTAINER_VERSION=$EPICONDUCTOR_CONTAINER_VERSION" >> /etc/environment
 RUN echo "EPICONDUCTOR_COLLECTION_DATE=$EPICONDUCTOR_COLLECTION_DATE" >> /etc/environment
 
