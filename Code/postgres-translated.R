@@ -1,3 +1,4 @@
+cat(commandArgs(), fill = TRUE)
 
 library(DBI)
 library(RPostgres)
@@ -16,6 +17,11 @@ con <-
                    password = "NHAN35",
                    user = "sa")
 
+makeID <- function(schema, table)
+{
+    DBI::dbQuoteIdentifier(con, DBI::Id(schema, table))
+}
+
 
 ## Function to obtain codebook and raw data from database, and
 ## translate and insert into DB. Silently does nothing if the target
@@ -25,16 +31,17 @@ con <-
 ## been inserted, so skip for now. Needs to be done later; see
 ## addPrimaryKey() in postgres-helpers.R
 
-insertTranslatedTable <- function(nhtable, con,
-                           as_integer = TRUE,
-                           non_null = primary_keys(nhtable),
-                           make_primary_key = TRUE,
-                           verbose = TRUE)
+insertTranslatedTable <-
+    function(nhtable, con,
+             as_integer = TRUE,
+             non_null = primary_keys(nhtable),
+             make_primary_key = TRUE,
+             verbose = TRUE)
 {
-    target <- DBI::dbQuoteIdentifier(con, paste0("Translated.", nhtable))
-    rawtable <- DBI::dbQuoteIdentifier(con, paste0("Raw.", nhtable))
-    qv <- DBI::dbQuoteIdentifier(con, "Metadata.QuestionnaireVariables")
-    vc <- DBI::dbQuoteIdentifier(con, "Metadata.VariableCodebook")
+    target <- makeID("Translated", nhtable)
+    rawtable <- makeID("Raw", nhtable)
+    qv <- makeID("Metadata", "QuestionnaireVariables")
+    vc <- makeID("Metadata", "VariableCodebook")
     if (DBI::dbExistsTable(con, target)) return("")
 
     if (verbose) {
@@ -96,7 +103,7 @@ insertTranslatedTable <- function(nhtable, con,
 ## manifest (e.g., large tables are included) - but for those
 ## insertion attempt will simply fail
 
-tablesDF <- DBI::dbReadTable(con, "Metadata.QuestionnaireDescriptions")
+tablesDF <- DBI::dbReadTable(con, makeID("Metadata", "QuestionnaireDescriptions"))
 
 TABLES <- subset(tablesDF, UseConstraints == "None")[["TableName"]] |> sort()
 
@@ -119,4 +126,6 @@ dstatus <- data.frame(Table = names(status), status = unname(status)) |> subset(
 dstatus
 write.csv(dstatus, file = paste0("/status/translated-", gsub(" ", "_", Sys.time(), fixed = TRUE), ".csv"))
 
+
+cat("=== Finished inserting Translated tables\n")
 

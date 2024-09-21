@@ -1,4 +1,6 @@
 
+cat(commandArgs(), fill = TRUE)
+
 library(DBI)
 library(RPostgres)
 
@@ -14,9 +16,14 @@ con <-
                    password = "NHAN35",
                    user = "sa")
 
-DBI::dbExecute(con, "CREATE SCHEMA metadata;")
-DBI::dbExecute(con, "CREATE SCHEMA raw;")
-DBI::dbExecute(con, "CREATE SCHEMA translated;")
+makeID <- function(schema, table)
+{
+    DBI::dbQuoteIdentifier(con, DBI::Id(schema, table))
+}
+
+DBI::dbExecute(con, "CREATE SCHEMA \"Metadata\";")
+DBI::dbExecute(con, "CREATE SCHEMA \"Raw\";")
+DBI::dbExecute(con, "CREATE SCHEMA \"Translated\";")
 
 ## Can change these to a local source 
 
@@ -26,17 +33,17 @@ codebookFile <- paste0(METADATASRC, "nhanes_variables_codebooks.tsv")
 tablesFile <- paste0(METADATASRC, "nhanes_tables.tsv")
 variablesFile <- paste0(METADATASRC, "nhanes_variables.tsv")
 
-cat("=== Reading ", codebookFile, fill = TRUE)
+cat("=== Reading ", codebookFile, "\n")
 codebookDF <- read.delim(codebookFile)
 names(codebookDF)[2] <- "TableName"
 ## str(codebookDF)
 
-cat("=== Reading ", tablesFile, fill = TRUE)
+cat("=== Reading ", tablesFile, "\n")
 tablesDF <- read.delim(tablesFile)
 names(tablesDF)[c(1,2)] <- c("TableName", "Description")
 ## str(tablesDF)
 
-cat("=== Reading ", variablesFile, fill = TRUE)
+cat("=== Reading ", variablesFile, "\n")
 variablesDF <- read.delim(variablesFile, sep = "\t", header = TRUE)
 names(variablesDF)[c(2, 3, 4)] <- c("TableName", "SasLabel", "Description")
 ## str(variablesDF)
@@ -54,8 +61,10 @@ names(variablesDF)[c(2, 3, 4)] <- c("TableName", "SasLabel", "Description")
 ## RPostgres::dbWriteTable() will use copy = TRUE (fast but less
 ## general) by default for Postgres connections
 
-DBI::dbWriteTable(con, "Metadata.QuestionnaireDescriptions", tablesDF)
-DBI::dbWriteTable(con, "Metadata.VariableCodebook", codebookDF)
-DBI::dbWriteTable(con, "Metadata.QuestionnaireVariables", variablesDF)
+DBI::dbWriteTable(con, makeID("Metadata", "QuestionnaireDescriptions"), tablesDF)
+DBI::dbWriteTable(con, makeID("Metadata", "VariableCodebook"), codebookDF)
+DBI::dbWriteTable(con, makeID("Metadata", "QuestionnaireVariables"), variablesDF)
+
+cat("=== Finished inserting Metadata tables\n")
 
 ## FIXME: Need to add non-null columns, create primary keys

@@ -181,6 +181,13 @@ We follow two of these recommendations explicitly:
 
 We should explore others as well.
 
+
+## Installing pgAdmin
+
+See <https://www.pgadmin.org/download/>
+
+
+
 ## Other Thoughts
 
 - Not sure if there is anything analogous to SQL Server's `DBCC

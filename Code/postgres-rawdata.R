@@ -1,4 +1,6 @@
 
+cat(commandArgs(), fill = TRUE)
+
 library(DBI)
 library(RPostgres)
 
@@ -15,11 +17,17 @@ con <-
                    password = "NHAN35",
                    user = "sa")
 
+makeID <- function(schema, table)
+{
+    DBI::dbQuoteIdentifier(con, DBI::Id(schema, table))
+}
 
-RAWDATASRC <- "https://raw.githubusercontent.com/ccb-hms/nhanes-data/main/Data/"
+## RAWDATASRC <- "https://raw.githubusercontent.com/ccb-hms/nhanes-data/main/Data/"
 
-## Can change this to a local mirror or git clone
-## RAWDATASRC <- "http://192.168.0.213/~deepayan/Data/"
+## Can change this to a local mirror or git clone served via httpuv
+
+
+RAWDATASRC <- "http://192.168.0.213:9849/snapshot/data/"
 
 
 ## Function to download and insert a raw NHANES table. A download
@@ -37,7 +45,7 @@ insertRawTable <- function(nhtable, con,
                            make_primary_key = FALSE,
                            verbose = TRUE)
 {
-    target <- DBI::dbQuoteIdentifier(con, paste0("Raw.", nhtable))
+    target <- makeID("Raw", nhtable)
     if (DBI::dbExistsTable(con, target)) return("")
 
     ## Read data from csv.xz file
@@ -101,7 +109,7 @@ insertRawTable <- function(nhtable, con,
 ## manifest (e.g., large tables are included) - but for those
 ## insertion attempt will simply fail
 
-tablesDF <- DBI::dbReadTable(con, "Metadata.QuestionnaireDescriptions")
+tablesDF <- DBI::dbReadTable(con, makeID("Metadata", "QuestionnaireDescriptions"))
 
 TABLES <- subset(tablesDF, UseConstraints == "None")[["TableName"]] |> sort()
 
@@ -117,6 +125,8 @@ dstatus <- data.frame(Table = names(status), status = unname(status)) |> subset(
 dstatus
 write.csv(dstatus, file = paste0("/status/raw-", gsub(" ", "_", Sys.time(), fixed = TRUE), ".csv"))
 
+
+cat("=== Finished inserting Raw tables\n")
 
 
 

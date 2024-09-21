@@ -27,8 +27,8 @@ con <-
 update_pkey <- function(nhtable, con,
                         verbose = TRUE)
 {
-    trtable <- DBI::dbQuoteIdentifier(con, paste0("Translated.", nhtable))
-    rawtable <- DBI::dbQuoteIdentifier(con, paste0("Raw.", nhtable))
+    trtable <- DBI::dbQuoteIdentifier(con, Id("Translated", nhtable))
+    rawtable <- DBI::dbQuoteIdentifier(con, Id("Raw", nhtable))
     ans <- data.frame(raw = DBI::dbExistsTable(con, rawtable),
                       translated = DBI::dbExistsTable(con, rawtable),
                       updated = NA)
@@ -53,7 +53,10 @@ update_pkey <- function(nhtable, con,
 ## manifest (e.g., large tables are included) - but for those
 ## insertion attempt will simply fail
 
-tablesDF <- DBI::dbReadTable(con, "Metadata.QuestionnaireDescriptions")
+tablesDF <-
+    DBI::dbReadTable(con,
+                     DBI::dbQuoteIdentifier(con,
+                                            Id("Metadata", "QuestionnaireDescriptions")))
 
 TABLES <- subset(tablesDF, UseConstraints == "None")[["TableName"]] |> sort()
 

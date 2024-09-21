@@ -130,13 +130,16 @@ RUN sed -i "s/^.*X11Forwarding.*$/X11Forwarding yes/" /etc/ssh/sshd_config \
 RUN git config --system credential.helper 'cache --timeout 86400'
 
 #------------------------------------------------------------------------------
-# Install DBI and RPostgres
+# Install DBI and RPostgres + nhanesA + phonto
 #------------------------------------------------------------------------------
 
 # use the remotes package to manage installations
 RUN Rscript -e "install.packages('remotes')" \
     && Rscript -e "remotes :: install_cran('DBI')" \
     && Rscript -e "remotes :: install_cran('RPostgres')"
+
+#     && Rscript -e "remotes :: install_github('deepayan/nhanes')" \
+#     && Rscript -e "remotes :: install_github('ainilaha/phonto')"
 
 
 #------------------------------------------------------------------------------
@@ -175,18 +178,22 @@ RUN service postgresql start \
     && Rscript /tmp/postgres-primary-keys.R \
     && service postgresql stop
 
+
 #------------------------------------------------------------------------------
-# Install nhanesA and phonto + misc other packages that might be useful
+# Copy over HTML documentation files
 #------------------------------------------------------------------------------
 
-# use the remotes package to manage installations
-RUN Rscript -e "install.packages('remotes')" \
-    && Rscript -e "remotes :: install_github('cjendres1/nhanes@postgres-backend')" \
-    && Rscript -e "remotes :: install_github('ainilaha/phonto')"
+COPY Code/copy-htmldocs.R /tmp/copy-htmldocs.R
+RUN mkdir /htmldoc \
+    && Rscript /tmp/copy-htmldocs.R
 
 
-# use the remotes package to manage installations
-RUN Rscript -e "install.packages(c('git2r', 'getPass', 'xlsx', 'forestplot', 'glmnet', 'glmpath', 'kableExtra', 'plotROC', 'sjPlot', 'survey', 'mitools', 'bookdown', 'lme4', 'survminer', 'DT', 'Hmisc', 'latticeExtra'))"
+
+######## UNCOMMENT (for production) START
+
+RUN Rscript -e "remotes:: install_github('deepayan/nhanes')" \
+    && Rscript -e "remotes:: install_github('ainilaha/phonto')" \
+    && Rscript -e "install.packages(c('git2r', 'getPass', 'xlsx', 'forestplot', 'glmnet', 'glmpath', 'kableExtra', 'plotROC', 'sjPlot', 'survey', 'mitools', 'bookdown', 'lme4', 'survminer', 'DT', 'Hmisc', 'latticeExtra'))"
 
 
 # # allow modification of these locations so users can install R packages without warnings
@@ -194,10 +201,16 @@ RUN chmod -R 777 /usr/local/lib/R/library
 RUN chmod -R 777 /usr/local/lib/R/site-library
 RUN chmod -R 777 /usr/local/lib/R/doc/html/packages.html
 
+######## UNCOMMENT END
+
+
+
+
+
 ## env variables identifying container (FIXME: get collection date from snapshot on GitHub)
-ENV EPICONDUCTOR_CONTAINER_DB postgres
-ENV EPICONDUCTOR_CONTAINER_VERSION v0.9.0
-ENV EPICONDUCTOR_COLLECTION_DATE 2024-02-12
+ENV EPICONDUCTOR_CONTAINER_DB="postgres"
+ENV EPICONDUCTOR_CONTAINER_VERSION="v0.9.1"
+ENV EPICONDUCTOR_COLLECTION_DATE="2024-09-01"
 
 RUN echo "EPICONDUCTOR_CONTAINER_DB=$EPICONDUCTOR_CONTAINER_DB" >> /usr/local/lib/R/etc/Renviron.site
 RUN echo "EPICONDUCTOR_CONTAINER_VERSION=$EPICONDUCTOR_CONTAINER_VERSION" >> /usr/local/lib/R/etc/Renviron.site
