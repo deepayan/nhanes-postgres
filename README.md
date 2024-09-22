@@ -23,7 +23,7 @@ docker run --rm --name nhanes-pg -d \
 	-p 5432:5432 \
 	-e 'CONTAINER_USER_USERNAME=test' \
 	-e 'CONTAINER_USER_PASSWORD=test' \
-	deepayansarkar/nhanes-postgresql:0.1.4
+	deepayansarkar/nhanes-postgresql:0.1.6
 ```
 
 To map a local directory so that it becomes accessible within the
@@ -46,9 +46,10 @@ useful ports in the container:
   [`nhanesA`](https://cran.r-project.org/package=nhanesA)
   pre-installed and pre-configured to use the database.
 
-* Port 22 provides can be used to access the container via SSH. If
-  needed, it is usually mapped to a different port as the host machine
-  is likely running its own SSH server on port 22.
+* Port 22 can be used to access the container via SSH. If
+  needed, it is usually mapped to a different port (2200 in the
+  incantation above) as the host machine is likely running its own
+  SSH server on port 22.
   
 * The PostgreSQL server running in the container can be accessed via
   port 5432. Mapping it to a port on the host machine allows direct
