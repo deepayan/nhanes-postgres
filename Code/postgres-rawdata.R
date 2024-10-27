@@ -22,11 +22,10 @@ makeID <- function(schema, table)
     DBI::dbQuoteIdentifier(con, DBI::Id(schema, table))
 }
 
-## RAWDATASRC <- "https://raw.githubusercontent.com/ccb-hms/nhanes-data/main/Data/"
+## Data source via HTTP[S]: Can point to github (slower) or to a git
+## clone served locally (see README)
 
-## Can change this to a local mirror or git clone served via httpuv
-
-
+## RAWDATASRC <- "https://raw.githubusercontent.com/deepayan/nhanes-snapshot/main/data/"
 RAWDATASRC <- "http://192.168.0.213:9849/snapshot/data/"
 
 

@@ -34,9 +34,9 @@ RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
 	&& apt-get update && apt-get install -y locales \
 	&& locale-gen en_US.utf8 \
 	&& /usr/sbin/update-locale LANG=en_US.UTF-8
-ENV LC_ALL en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV TZ=America/New_York
+ENV LC_ALL="en_US.UTF-8"
+ENV LANG="en_US.UTF-8"
+ENV TZ="America/New_York"
 
 WORKDIR /tmp
 
@@ -134,9 +134,11 @@ RUN git config --system credential.helper 'cache --timeout 86400'
 #------------------------------------------------------------------------------
 
 # use the remotes package to manage installations
-RUN Rscript -e "install.packages('remotes')" \
-    && Rscript -e "remotes :: install_cran('DBI')" \
-    && Rscript -e "remotes :: install_cran('RPostgres')"
+RUN Rscript -e "install.packages('remotes')"
+
+# not needed as already part of base image (rocker/tidyverse)
+    # && Rscript -e "remotes :: install_cran('DBI')" \
+    # && Rscript -e "remotes :: install_cran('RPostgres')"
 
 #     && Rscript -e "remotes :: install_github('deepayan/nhanes')" \
 #     && Rscript -e "remotes :: install_github('ainilaha/phonto')"
@@ -187,30 +189,18 @@ COPY Code/copy-htmldocs.R /tmp/copy-htmldocs.R
 RUN mkdir /htmldoc \
     && Rscript /tmp/copy-htmldocs.R
 
+#------------------------------------------------------------------------------
+# Set environment variables (e.g., so that nhanesA uses the database)
+#------------------------------------------------------------------------------
 
+## These arguments must be specified during docker build
+ARG COLLECTION_DATE
+ARG CONTAINER_VERSION
 
-######## UNCOMMENT (for production) START
-
-RUN Rscript -e "remotes:: install_github('deepayan/nhanes')" \
-    && Rscript -e "remotes:: install_github('ainilaha/phonto')" \
-    && Rscript -e "install.packages(c('git2r', 'getPass', 'xlsx', 'forestplot', 'glmnet', 'glmpath', 'kableExtra', 'plotROC', 'sjPlot', 'survey', 'mitools', 'bookdown', 'lme4', 'survminer', 'DT', 'Hmisc', 'latticeExtra'))"
-
-
-# # allow modification of these locations so users can install R packages without warnings
-RUN chmod -R 777 /usr/local/lib/R/library
-RUN chmod -R 777 /usr/local/lib/R/site-library
-RUN chmod -R 777 /usr/local/lib/R/doc/html/packages.html
-
-######## UNCOMMENT END
-
-
-
-
-
-## env variables identifying container (FIXME: get collection date from snapshot on GitHub)
+## env variables identifying container
 ENV EPICONDUCTOR_CONTAINER_DB="postgres"
-ENV EPICONDUCTOR_CONTAINER_VERSION="v0.9.1"
-ENV EPICONDUCTOR_COLLECTION_DATE="2024-09-01"
+ENV EPICONDUCTOR_CONTAINER_VERSION=$CONTAINER_VERSION
+ENV EPICONDUCTOR_COLLECTION_DATE=$COLLECTION_DATE
 
 RUN echo "EPICONDUCTOR_CONTAINER_DB=$EPICONDUCTOR_CONTAINER_DB" >> /usr/local/lib/R/etc/Renviron.site
 RUN echo "EPICONDUCTOR_CONTAINER_VERSION=$EPICONDUCTOR_CONTAINER_VERSION" >> /usr/local/lib/R/etc/Renviron.site
@@ -219,6 +209,24 @@ RUN echo "EPICONDUCTOR_COLLECTION_DATE=$EPICONDUCTOR_COLLECTION_DATE" >> /usr/lo
 RUN echo "EPICONDUCTOR_CONTAINER_DB=$EPICONDUCTOR_CONTAINER_DB" >> /etc/environment
 RUN echo "EPICONDUCTOR_CONTAINER_VERSION=$EPICONDUCTOR_CONTAINER_VERSION" >> /etc/environment
 RUN echo "EPICONDUCTOR_COLLECTION_DATE=$EPICONDUCTOR_COLLECTION_DATE" >> /etc/environment
+
+
+######## UNCOMMENT (for production) START
+
+RUN service postgresql start \
+    && sleep 5 \
+    && Rscript -e "install.packages(c('git2r', 'getPass', 'xlsx', 'forestplot', 'glmnet', 'glmpath', 'kableExtra', 'plotROC', 'sjPlot', 'survey', 'mitools', 'bookdown', 'lme4', 'survminer', 'DT', 'Hmisc', 'latticeExtra'))" \
+    && Rscript -e "remotes:: install_github('deepayan/nhanes')" \
+    && Rscript -e "remotes:: install_github('ainilaha/phonto', dependencies = TRUE, build_opts = '')" \
+    && service postgresql stop
+
+
+# allow modification of these locations so users can install R packages without warnings
+RUN chmod -R 777 /usr/local/lib/R/library
+RUN chmod -R 777 /usr/local/lib/R/site-library
+RUN chmod -R 777 /usr/local/lib/R/doc/html/packages.html
+
+######## UNCOMMENT END
 
 
 ## Configure postgres to accept connections over the network. TODO: We

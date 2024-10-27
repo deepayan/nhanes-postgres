@@ -25,27 +25,26 @@ DBI::dbExecute(con, "CREATE SCHEMA \"Metadata\";")
 DBI::dbExecute(con, "CREATE SCHEMA \"Raw\";")
 DBI::dbExecute(con, "CREATE SCHEMA \"Translated\";")
 
-## Can change these to a local source 
+## Data source via HTTP[S]: Can point to github (slower) or to a git
+## clone served locally (see README)
 
-METADATASRC <- "https://raw.githubusercontent.com/ccb-hms/NHANES-metadata/master/metadata/"
+## METADATASRC <- "https://raw.githubusercontent.com/deepayan/nhanes-snapshot/main/metadata/"
+METADATASRC <- "http://192.168.0.213:9849/snapshot/metadata/"
 
-codebookFile <- paste0(METADATASRC, "nhanes_variables_codebooks.tsv")
-tablesFile <- paste0(METADATASRC, "nhanes_tables.tsv")
-variablesFile <- paste0(METADATASRC, "nhanes_variables.tsv")
+codebookFile <- paste0(METADATASRC, "codebookDF.rds")
+tablesFile <- paste0(METADATASRC, "tablesDF.rds")
+variablesFile <- paste0(METADATASRC, "variablesDF.rds")
 
 cat("=== Reading ", codebookFile, "\n")
-codebookDF <- read.delim(codebookFile)
-names(codebookDF)[2] <- "TableName"
+codebookDF <- readRDS(url(codebookFile))
 ## str(codebookDF)
 
 cat("=== Reading ", tablesFile, "\n")
-tablesDF <- read.delim(tablesFile)
-names(tablesDF)[c(1,2)] <- c("TableName", "Description")
+tablesDF <- readRDS(url(tablesFile))
 ## str(tablesDF)
 
 cat("=== Reading ", variablesFile, "\n")
-variablesDF <- read.delim(variablesFile, sep = "\t", header = TRUE)
-names(variablesDF)[c(2, 3, 4)] <- c("TableName", "SasLabel", "Description")
+variablesDF <- readRDS(url(variablesFile))
 ## str(variablesDF)
 
 ## Postgres queries convert all un-(double)quoted column names to

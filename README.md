@@ -23,7 +23,7 @@ docker run --rm --name nhanes-pg -d \
 	-p 5432:5432 \
 	-e 'CONTAINER_USER_USERNAME=test' \
 	-e 'CONTAINER_USER_PASSWORD=test' \
-	deepayansarkar/nhanes-postgresql:0.1.6
+	deepayansarkar/nhanes-postgresql:0.10.1
 ```
 
 To map a local directory so that it becomes accessible within the
@@ -46,21 +46,23 @@ useful ports in the container:
   [`nhanesA`](https://cran.r-project.org/package=nhanesA)
   pre-installed and pre-configured to use the database.
 
-* Port 22 can be used to access the container via SSH. If
+* Port 22 can be used to access the container _via_ SSH. If
   needed, it is usually mapped to a different port (2200 in the
   incantation above) as the host machine is likely running its own
   SSH server on port 22.
   
-* The PostgreSQL server running in the container can be accessed via
+* The PostgreSQL server running in the container can be accessed through
   port 5432. Mapping it to a port on the host machine allows direct
   access to the database over the local network, which can be useful
   in multi-user environments.
 
 
+# Building the docker image
 
-# Building
+## Outline
 
-Build the docker image using (but see below for the version using `time`)
+In principle, we can build the docker image using the following, _but_
+for the recommended approach, see the version using `time` below.
 
 ```
 docker build --progress plain --shm-size=1024M --platform=linux/amd64 --tag nhanes-postgres -f Container/Dockerfile .
@@ -75,21 +77,64 @@ docker build --progress plain --shm-size=1024M --platform=linux/arm64 --tag nhan
 but this is not currently possible due to limitations of the parent
 image (rocker/tidyverse).
 
+## Specifying data source
+
+A major part of the build process is to collect NHANES data
+(specifically, the raw SAS format tables, the HTML docs, and the
+codebook other metadata extracted from these docs) and insert them
+into a database. Although these could be obtained directly from the
+NHANES website maintained by CDC, we prefer to use an intermediate
+[snapshot](https://github.com/deepayan/nhanes-snapshot) with a
+well-defined collection date. This avoids any ambiguity regarding
+which datasets (and which versions thereof) are included in the docker
+image.
+
+From the perspective of the build process, the contents of this
+snapshot are expected to be available through a web server. This
+serves two purposes: (a) In principle, the docker build can work
+without external dependencies as long as a reliable internet
+connection is available. (b) Accessing web resources is easy during
+the docker build process, whereas accessing local files in the build
+machine is not as easy.
+
+However, depending on web access has the disadvantage that it slows
+down the build process. To avoid this, we can check out the snapshot
+repository and serve it locally by running an appropriate local
+server. One implementation, using the R `httpuv` package, is available
+[here](https://github.com/deepayan/nhanes-snapshot/blob/main/code/start-server.R).
+
+The code below currently assumes that a local server has been
+initiated using this code.
+
+FIXME: Allow this to be controlled _via_ an environment variable.
+
+
+## Versioning
+
+Before starting, make sure to edit the files `COLLECTION_DATE` and
+`CONTAINER_VERSION` if necessary. The `COLLECTION_DATE` should be a
+copy of the corresponding file in the snapshot being used to populate
+the database.
+
+## Building
+
 It may be useful to redirect the console output to a log file, as it
 will contain informative messages about failures. This may be done
 using something like
 
 ```
-time docker build --progress plain --shm-size=2048M --platform=linux/amd64 --tag nhanes-postgres -f Container/Dockerfile . &> build.log
+export CDATE=`cat COLLECTION_DATE`
+export CVERSION=`cat CONTAINER_VERSION`
+time docker build --progress plain --shm-size=2048M --platform=linux/amd64 --tag nhanes-postgres --build-arg COLLECTION_DATE=${CDATE} --build-arg CONTAINER_VERSION=${CVERSION} -f Container/Dockerfile . &> build.log
 ```
 
 To upload to docker hub:
 
 ```
-docker tag nhanes-postgres <user>/nhanes-postgresql:x.y.z
-docker push <user>/nhanes-postgresql:x.y.z
+echo ${CVERSION}
+docker tag nhanes-postgres <user>/nhanes-postgresql:${CVERSION}
+docker push <user>/nhanes-postgresql:${CVERSION}
 ```
-
 
 # Running
 
