@@ -86,8 +86,7 @@ RUN apt-get update \
 	       screen \
 	       git \
 	       libgit2-dev \
-	       nano \
-	       emacs \
+	       nano emacs vim \
 	       gnupg \
 	       krb5-user \
 	       python3-dev \
