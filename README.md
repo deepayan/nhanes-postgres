@@ -16,14 +16,14 @@ a PostgreSQL database containing data from NHANES.
 
 To run the current pre-built image, install docker and run
 
-```
+```sh
 docker run --rm --name nhanes-pg -d \
     -p 8787:8787 \
 	-p 2200:22 \
 	-p 5432:5432 \
 	-e 'CONTAINER_USER_USERNAME=test' \
 	-e 'CONTAINER_USER_PASSWORD=test' \
-	deepayansarkar/nhanes-postgresql:0.10.1
+	deepayansarkar/nhanes-postgresql:0.11.0
 ```
 
 To map a local directory so that it becomes accessible within the
@@ -33,6 +33,13 @@ container, add
          -v <LOCAL_DIRECTORY>:/HostData \
 ```
 
+On Windows, run docker desktop, open a terminal, and execute the same
+command without any line breaks. The following omits a couple of port
+forwarding flags which are unlikely to be useful (see below).
+
+```sh
+docker run --rm --name nhanes-pg -d -p 8787:8787 -e 'CONTAINER_USER_USERNAME=test' -e 'CONTAINER_USER_PASSWORD=test' deepayansarkar/nhanes-postgresql:0.11.0
+```
 
 This is the easiest way to get started. The various `-p` flags exposes
 useful ports in the container:

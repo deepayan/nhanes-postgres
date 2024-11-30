@@ -4,6 +4,29 @@
 All notable changes to this project will be documented in this
 file. No changelog was maintained till version 0.10.1.
 
+
+## Changes in version 0.11.0
+
+### Added
+
+- Ubuntu packages `vim`, `texlive-latex-extra` and `texlive-xetex`
+
+- Updated collection date to 2024-11-22, adding some new cycle L files
+
+- Include collection date and container version in database
+  (`Metadata.VersionInfo`).  Remove environment variables previously
+  used to record this information.
+  
+- Update `nhanesA::browseNHANES()` to use local copies of doc files if
+  available by setting environment variable `NHANES_TABLE_BASE`
+  appropriately.
+
+### Changed
+
+- Moved doc files to match web folder structure. This makes it easier
+  to get nhanesA to access the local doc files instead of the web
+  versions.
+
 ## Changes in version 0.10.1
 
 ### Added
@@ -31,12 +54,6 @@ file. No changelog was maintained till version 0.10.1.
   [NHANES-metadata](https://github.com/ccb-hms/NHANES-metadata)
 
 ### Pending
-
-- Include collection date and other relevant metadata in a metadata
-  table in the database.
-  
-- Update `nhanesA::browseNHANES()` to use local copies of doc files if
-  available.
 
 - Investigate database insertion errors
 

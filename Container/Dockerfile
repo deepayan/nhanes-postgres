@@ -60,6 +60,8 @@ RUN apt-get update \
 	       texinfo \
 	       texlive-latex-base \
 	       texlive-latex-recommended \
+	       texlive-latex-extra \
+	       texlive-xetex \
 	       fonts-noto \
 	       libtiff-dev \
 	       libpng-dev \
@@ -92,7 +94,8 @@ RUN apt-get update \
 	       python3-dev \
 	       python3 \
 	       python3-pip \
-	       libaio1 \
+	       # libaio1 \
+	       libaio1t64 \
 	       pkg-config \
 	       libkrb5-dev \
 	       unzip \
@@ -129,25 +132,13 @@ RUN sed -i "s/^.*X11Forwarding.*$/X11Forwarding yes/" /etc/ssh/sshd_config \
 RUN git config --system credential.helper 'cache --timeout 86400'
 
 #------------------------------------------------------------------------------
-# Install DBI and RPostgres + nhanesA + phonto
-#------------------------------------------------------------------------------
-
-# use the remotes package to manage installations
-RUN Rscript -e "install.packages('remotes')"
-
-# not needed as already part of base image (rocker/tidyverse)
-    # && Rscript -e "remotes :: install_cran('DBI')" \
-    # && Rscript -e "remotes :: install_cran('RPostgres')"
-
-#     && Rscript -e "remotes :: install_github('deepayan/nhanes')" \
-#     && Rscript -e "remotes :: install_github('ainilaha/phonto')"
-
-
-#------------------------------------------------------------------------------
 # Set up SQL Server, download and insert metadata + raw tables
+# Install DBI and RPostgres first if needed (already included in rocker/tidyverse)
 #------------------------------------------------------------------------------
 
 RUN mkdir /status
+COPY COLLECTION_DATE /tmp/COLLECTION_DATE
+COPY CONTAINER_VERSION /tmp/CONTAINER_VERSION
 COPY Code/utils/postgres-helpers.R /tmp/postgres-helpers.R
 COPY Code/postgres-setup.sql /tmp/postgres-setup.sql
 COPY Code/postgres-setup.R /tmp/postgres-setup.R
@@ -192,22 +183,31 @@ RUN mkdir /htmldoc \
 # Set environment variables (e.g., so that nhanesA uses the database)
 #------------------------------------------------------------------------------
 
-## These arguments must be specified during docker build
-ARG COLLECTION_DATE
-ARG CONTAINER_VERSION
-
 ## env variables identifying container
-ENV EPICONDUCTOR_CONTAINER_DB="postgres"
-ENV EPICONDUCTOR_CONTAINER_VERSION=$CONTAINER_VERSION
-ENV EPICONDUCTOR_COLLECTION_DATE=$COLLECTION_DATE
+ENV NHANES_DB_BACKEND="postgres"
 
-RUN echo "EPICONDUCTOR_CONTAINER_DB=$EPICONDUCTOR_CONTAINER_DB" >> /usr/local/lib/R/etc/Renviron.site
-RUN echo "EPICONDUCTOR_CONTAINER_VERSION=$EPICONDUCTOR_CONTAINER_VERSION" >> /usr/local/lib/R/etc/Renviron.site
-RUN echo "EPICONDUCTOR_COLLECTION_DATE=$EPICONDUCTOR_COLLECTION_DATE" >> /usr/local/lib/R/etc/Renviron.site
+# ENV EPICONDUCTOR_CONTAINER_VERSION=$CONTAINER_VERSION
+# ENV EPICONDUCTOR_COLLECTION_DATE=$COLLECTION_DATE
 
-RUN echo "EPICONDUCTOR_CONTAINER_DB=$EPICONDUCTOR_CONTAINER_DB" >> /etc/environment
-RUN echo "EPICONDUCTOR_CONTAINER_VERSION=$EPICONDUCTOR_CONTAINER_VERSION" >> /etc/environment
-RUN echo "EPICONDUCTOR_COLLECTION_DATE=$EPICONDUCTOR_COLLECTION_DATE" >> /etc/environment
+RUN echo "EPICONDUCTOR_CONTAINER_DB=$NHANES_DB_BACKEND" >> /usr/local/lib/R/etc/Renviron.site
+RUN echo "NHANES_DB_BACKEND=$NHANES_DB_BACKEND" >> /usr/local/lib/R/etc/Renviron.site
+
+# RUN echo "EPICONDUCTOR_CONTAINER_VERSION=$EPICONDUCTOR_CONTAINER_VERSION" >> /usr/local/lib/R/etc/Renviron.site
+# RUN echo "EPICONDUCTOR_COLLECTION_DATE=$EPICONDUCTOR_COLLECTION_DATE" >> /usr/local/lib/R/etc/Renviron.site
+
+RUN echo "EPICONDUCTOR_CONTAINER_DB=$NHANES_DB_BACKEND" >> /etc/environment
+RUN echo "NHANES_DB_BACKEND=$NHANES_DB_BACKEND" >> /etc/environment
+
+# RUN echo "EPICONDUCTOR_CONTAINER_VERSION=$EPICONDUCTOR_CONTAINER_VERSION" >> /etc/environment
+# RUN echo "EPICONDUCTOR_COLLECTION_DATE=$EPICONDUCTOR_COLLECTION_DATE" >> /etc/environment
+
+
+#------------------------------------------------------------------------------
+# Install nhanesA + phonto for end-users
+#------------------------------------------------------------------------------
+
+# use the remotes package to manage installations
+RUN Rscript -e "install.packages('remotes')"
 
 
 ######## UNCOMMENT (for production) START
@@ -216,7 +216,8 @@ RUN service postgresql start \
     && sleep 5 \
     && Rscript -e "install.packages(c('git2r', 'getPass', 'xlsx', 'forestplot', 'glmnet', 'glmpath', 'kableExtra', 'plotROC', 'sjPlot', 'survey', 'mitools', 'bookdown', 'lme4', 'survminer', 'DT', 'Hmisc', 'latticeExtra'))" \
     && Rscript -e "remotes:: install_github('deepayan/nhanes')" \
-    && Rscript -e "remotes:: install_github('ainilaha/phonto', dependencies = TRUE, build_opts = '')" \
+    && Rscript -e "remotes:: install_github('ainilaha/phonto', dependencies = TRUE)" \
+#    && Rscript -e "remotes:: install_github('ainilaha/phonto', dependencies = TRUE, build_opts = '')" \
     && service postgresql stop
 
 
@@ -232,10 +233,12 @@ RUN chmod -R 777 /usr/local/lib/R/doc/html/packages.html
 ## may also want to make such connections read-only
 
 # Ensure PostgreSQL listens on all interfaces
-RUN sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" /etc/postgresql/14/main/postgresql.conf
+
+
+RUN sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" /etc/postgresql/16/main/postgresql.conf
 
 # Allow all IP addresses to connect to PostgreSQL (this affects both all and replication)
-RUN sed -i "s/127.0.0.1\/32/0.0.0.0\/0/" /etc/postgresql/14/main/pg_hba.conf
+RUN sed -i "s/127.0.0.1\/32/0.0.0.0\/0/" /etc/postgresql/16/main/pg_hba.conf
 
 ## OR
 ## RUN echo "host all all 0.0.0.0/0 scram-sha-256" >> /etc/postgresql/14/main/pg_hba.conf
@@ -245,6 +248,13 @@ RUN sed -i "s/127.0.0.1\/32/0.0.0.0\/0/" /etc/postgresql/14/main/pg_hba.conf
 # EXPOSE 22   # ssh
 # EXPOSE 8787 # RStudio Server
 # EXPOSE 5432 # PostgreSQL
+
+
+# Point nhanesA to local copies of HTML documentation
+
+RUN echo "NHANES_TABLE_BASE=/htmldoc" >> /usr/local/lib/R/etc/Renviron.site
+RUN echo "NHANES_TABLE_BASE=/htmldoc" >> /etc/environment
+RUN mkdir /htmldoc/Nchs && ln -s /htmldoc /htmldoc/Nchs/Nhanes
 
 # # Copy startup script
 RUN mkdir /startup

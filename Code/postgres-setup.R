@@ -25,6 +25,20 @@ DBI::dbExecute(con, "CREATE SCHEMA \"Metadata\";")
 DBI::dbExecute(con, "CREATE SCHEMA \"Raw\";")
 DBI::dbExecute(con, "CREATE SCHEMA \"Translated\";")
 
+cat("=== Inserting Container version information\n")
+
+COLLECTION_DATE <- paste(trimws(readLines("/tmp/COLLECTION_DATE")), collapse = "")
+CONTAINER_VERSION <- paste(trimws(readLines("/tmp/CONTAINER_VERSION")), collapse = "")
+
+VersionInfo <-
+    data.frame(Tag = c("COLLECTION_DATE", "CONTAINER_VERSION"), 
+               Value = c(COLLECTION_DATE, CONTAINER_VERSION))
+
+print(VersionInfo)
+
+DBI::dbWriteTable(con, makeID("Metadata", "VersionInfo"), VersionInfo)
+
+
 ## Data source via HTTP[S]: Can point to github (slower) or to a git
 ## clone served locally (see README)
 
@@ -65,5 +79,10 @@ DBI::dbWriteTable(con, makeID("Metadata", "VariableCodebook"), codebookDF)
 DBI::dbWriteTable(con, makeID("Metadata", "QuestionnaireVariables"), variablesDF)
 
 cat("=== Finished inserting Metadata tables\n")
+
+
+
+
+
 
 ## FIXME: Need to add non-null columns, create primary keys
