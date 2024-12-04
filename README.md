@@ -23,7 +23,7 @@ docker run --rm --name nhanes-pg -d \
 	-p 5432:5432 \
 	-e 'CONTAINER_USER_USERNAME=test' \
 	-e 'CONTAINER_USER_PASSWORD=test' \
-	deepayansarkar/nhanes-postgresql:0.11.0
+	epiconnector/nhanes-postgresql:0.12.0
 ```
 
 To map a local directory so that it becomes accessible within the
@@ -38,7 +38,7 @@ command without any line breaks. The following omits a couple of port
 forwarding flags which are unlikely to be useful (see below).
 
 ```sh
-docker run --rm --name nhanes-pg -d -p 8787:8787 -e 'CONTAINER_USER_USERNAME=test' -e 'CONTAINER_USER_PASSWORD=test' deepayansarkar/nhanes-postgresql:0.11.0
+docker run --rm --name nhanes-pg -d -p 8787:8787 -e 'CONTAINER_USER_USERNAME=test' -e 'CONTAINER_USER_PASSWORD=test' epiconnector/nhanes-postgresql:0.12.0
 ```
 
 This is the easiest way to get started. The various `-p` flags exposes
@@ -139,8 +139,8 @@ To upload to docker hub:
 
 ```
 echo ${CVERSION}
-docker tag nhanes-postgres <user>/nhanes-postgresql:${CVERSION}
-docker push <user>/nhanes-postgresql:${CVERSION}
+docker tag nhanes-postgres epiconnector/nhanes-postgresql:${CVERSION}
+docker push epiconnector/nhanes-postgresql:${CVERSION}
 ```
 
 # Running
@@ -168,24 +168,19 @@ As before, to map a local directory, add
 
 ## Salient features:
 
-- Based on rocker/tidyverse:4.3.3, which gives us Ubuntu 22.04 LTS
-  along with RStudio Server and DBI packages (and of course tidyverse,
-  which we do not use)
+- Based on rocker/tidyverse:4.4, which gives us Ubuntu 22.04 LTS
+  along with RStudio Server and DBI packages (and of course tidyverse)
   
 - All database insertions are done through `DBI`. All data are
-  downloaded directly from GitHub "raw" URLs. No data is saved in
+  downloaded directly from GitHub "raw" URLs (or local copies). No data is saved in
   files locally.
   
 - By default, raw data is obtained from
-  <https://github.com/ccb-hms/nhanes-data>, and not directly from the
+  <https://github.com/deepayan/nhanes-snapshot>, and not directly from the
   CDC website. The source is customizable in `Dockerfile`, which may
   be useful if one wants to avoid build-time downloads by making a a
   local clone of the repository available via a (local) server such as
   [httpuv](https://cran.r-project.org/package=httpuv).
-
-- Codebook data is obtained from
-  <https://github.com/ccb-hms/NHANES-metadata> (ontology tables are
-  not loaded yet)
 
 - There are a handful of failures, which are not yet tracked properly,
   but some information is saved inside the `/status/` directory inside
@@ -238,8 +233,6 @@ We should explore others as well.
 ## Installing pgAdmin
 
 See <https://www.pgadmin.org/download/>
-
-
 
 ## Other Thoughts
 
