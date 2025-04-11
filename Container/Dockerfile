@@ -6,7 +6,7 @@
 
 ## Base image: See <https://github.com/epiconnector/docker-rdev>
 
-FROM epiconnector/rdev:4.4
+FROM deepayansarkar/rdev:4.4
 
 #------------------------------------------------------------------------------
 # Basic initial system configuration
