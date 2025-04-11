@@ -11,7 +11,7 @@ sapply(ydirs[-11], dir.create)
 ## clone served locally (see README)
 
 ## RAWDATASRC <- "https://raw.githubusercontent.com/deepayan/nhanes-snapshot/main/docs/"
-RAWDATASRC <- "http://192.168.0.213:9849/snapshot/docs/"
+RAWDATASRC <- "http://host.docker.internal:9849/snapshot/docs/"
 
 htmlfiles <- readLines(paste0(RAWDATASRC, "MANIFEST.txt"))
 htmlfiles <- htmlfiles[!endsWith(htmlfiles, "All Years.htm")]

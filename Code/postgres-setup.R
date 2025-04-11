@@ -43,7 +43,7 @@ DBI::dbWriteTable(con, makeID("Metadata", "VersionInfo"), VersionInfo)
 ## clone served locally (see README)
 
 ## METADATASRC <- "https://raw.githubusercontent.com/deepayan/nhanes-snapshot/main/metadata/"
-METADATASRC <- "http://192.168.0.213:9849/snapshot/metadata/"
+METADATASRC <- "http://host.docker.internal:9849/snapshot/metadata/"
 
 codebookFile <- paste0(METADATASRC, "codebookDF.rds")
 tablesFile <- paste0(METADATASRC, "tablesDF.rds")

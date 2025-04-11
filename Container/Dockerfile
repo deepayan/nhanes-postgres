@@ -133,7 +133,7 @@ RUN echo "NHANES_TABLE_BASE=/htmldoc" >> /usr/local/lib/R/etc/Renviron.site \
     && mkdir /htmldoc/Nchs && ln -s /htmldoc /htmldoc/Nchs/Nhanes
 
 # Create a mount point for host filesystem data and copy startup script
-RUN mkdir /HostData && mkdir -p /startup
+RUN mkdir -p /HostData && mkdir -p /startup
 COPY Container/startup.sh /startup/startup.sh
 RUN chmod 700 /startup/startup.sh
 
