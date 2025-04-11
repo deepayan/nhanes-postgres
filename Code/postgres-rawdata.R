@@ -26,7 +26,7 @@ makeID <- function(schema, table)
 ## clone served locally (see README)
 
 ## RAWDATASRC <- "https://raw.githubusercontent.com/deepayan/nhanes-snapshot/main/data/"
-RAWDATASRC <- "http://192.168.0.213:9849/snapshot/data/"
+RAWDATASRC <- "http://host.docker.internal:9849/snapshot/data/"
 
 
 ## Function to download and insert a raw NHANES table. A download
