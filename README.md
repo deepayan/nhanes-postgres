@@ -23,7 +23,7 @@ docker run --rm --name nhanes-pg -d \
 	-p 5432:5432 \
 	-e 'CONTAINER_USER_USERNAME=test' \
 	-e 'CONTAINER_USER_PASSWORD=test' \
-	deepayansarkar/nhanes-postgresql:0.11.0
+	deepayansarkar/nhanes-postgresql:0.13.0
 ```
 
 To map a local directory so that it becomes accessible within the
@@ -38,7 +38,7 @@ command without any line breaks. The following omits a couple of port
 forwarding flags which are unlikely to be useful (see below).
 
 ```sh
-docker run --rm --name nhanes-pg -d -p 8787:8787 -e 'CONTAINER_USER_USERNAME=test' -e 'CONTAINER_USER_PASSWORD=test' deepayansarkar/nhanes-postgresql:0.11.0
+docker run --rm --name nhanes-pg -d -p 8787:8787 -e 'CONTAINER_USER_USERNAME=test' -e 'CONTAINER_USER_PASSWORD=test' deepayansarkar/nhanes-postgresql:0.13.0
 ```
 
 This is the easiest way to get started. The various `-p` flags exposes
