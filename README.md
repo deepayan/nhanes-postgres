@@ -139,8 +139,8 @@ To upload to docker hub:
 
 ```
 echo ${CVERSION}
-docker tag nhanes-postgres epiconnector/nhanes-postgresql:${CVERSION}
-docker push epiconnector/nhanes-postgresql:${CVERSION}
+docker tag nhanes-postgres deepayansarkar/nhanes-postgresql:${CVERSION}
+docker push deepayansarkar/nhanes-postgresql:${CVERSION}
 ```
 
 # Running

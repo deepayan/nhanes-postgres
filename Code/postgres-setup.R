@@ -1,6 +1,18 @@
 
 cat(commandArgs(), fill = TRUE)
 
+## Data source via HTTP[S]: Can point to github (slower) or to a git
+## clone served locally (see README)
+
+## RAWDATALOC <- "https://raw.githubusercontent.com/deepayan/nhanes-snapshot/main/"
+RAWDATALOC <- "http://192.168.0.27:9849/snapshot/"
+
+## would have been more general but does not always work
+## RAWDATALOC <- "http://host.docker.internal:9849/snapshot/"
+
+METADATASRC <- paste0(RAWDATALOC, "metadata/")
+
+
 library(DBI)
 library(RPostgres)
 
@@ -38,12 +50,6 @@ print(VersionInfo)
 
 DBI::dbWriteTable(con, makeID("Metadata", "VersionInfo"), VersionInfo)
 
-
-## Data source via HTTP[S]: Can point to github (slower) or to a git
-## clone served locally (see README)
-
-## METADATASRC <- "https://raw.githubusercontent.com/deepayan/nhanes-snapshot/main/metadata/"
-METADATASRC <- "http://host.docker.internal:9849/snapshot/metadata/"
 
 codebookFile <- paste0(METADATASRC, "codebookDF.rds")
 tablesFile <- paste0(METADATASRC, "tablesDF.rds")

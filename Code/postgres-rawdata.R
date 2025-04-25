@@ -1,6 +1,17 @@
 
 cat(commandArgs(), fill = TRUE)
 
+## Data source via HTTP[S]: Can point to github (slower) or to a git
+## clone served locally (see README)
+
+## RAWDATALOC <- "https://raw.githubusercontent.com/deepayan/nhanes-snapshot/main/"
+RAWDATALOC <- "http://192.168.0.27:9849/snapshot/"
+
+## would have been more general but does not always work
+## RAWDATALOC <- "http://host.docker.internal:9849/snapshot/"
+
+RAWDATASRC <- paste0(RAWDATALOC, "data/")
+
 library(DBI)
 library(RPostgres)
 
@@ -22,11 +33,6 @@ makeID <- function(schema, table)
     DBI::dbQuoteIdentifier(con, DBI::Id(schema, table))
 }
 
-## Data source via HTTP[S]: Can point to github (slower) or to a git
-## clone served locally (see README)
-
-## RAWDATASRC <- "https://raw.githubusercontent.com/deepayan/nhanes-snapshot/main/data/"
-RAWDATASRC <- "http://host.docker.internal:9849/snapshot/data/"
 
 
 ## Function to download and insert a raw NHANES table. A download

@@ -99,8 +99,8 @@ RUN Rscript -e "install.packages('remotes')"
 
 RUN service postgresql start \
     && sleep 5 \
-    && Rscript -e "remotes:: install_github('deepayan/nhanes')" \
-    && Rscript -e "remotes:: install_github('ainilaha/phonto', dependencies = TRUE)" \
+    && Rscript -e "remotes:: install_github('cjendres1/nhanes')" \
+    && Rscript -e "remotes:: install_github('epiconnector/phonto', dependencies = TRUE)" \
 #    && Rscript -e "remotes:: install_github('ainilaha/phonto', dependencies = TRUE, build_opts = '')" \
     && service postgresql stop
 
