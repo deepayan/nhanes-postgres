@@ -1,11 +1,11 @@
 # NOTE
 
-This repository has been archived.
+**This repository has been archived.**
 
 Please use <https://github.com/epiconnector/nhanes-postgres> for
 further updates.
 
-
+---
 
 # NHANES in Postgres
 
