@@ -1,3 +1,12 @@
+# NOTE
+
+This repository has been archived.
+
+Please use <https://github.com/epiconnector/nhanes-postgres> for
+further updates.
+
+
+
 # NHANES in Postgres
 
 This repository contains R code and a Docker image definition that
@@ -19,11 +28,11 @@ To run the current pre-built image, install docker and run
 ```sh
 docker run --rm --name nhanes-pg -d \
     -p 8787:8787 \
-	-p 2200:22 \
-	-p 5432:5432 \
-	-e 'CONTAINER_USER_USERNAME=test' \
-	-e 'CONTAINER_USER_PASSWORD=test' \
-	deepayansarkar/nhanes-postgresql:0.13.0
+        -p 2200:22 \
+        -p 5432:5432 \
+        -e 'CONTAINER_USER_USERNAME=test' \
+        -e 'CONTAINER_USER_PASSWORD=test' \
+        epiconnector/nhanes-postgresql:0.14.0
 ```
 
 To map a local directory so that it becomes accessible within the
@@ -38,7 +47,7 @@ command without any line breaks. The following omits a couple of port
 forwarding flags which are unlikely to be useful (see below).
 
 ```sh
-docker run --rm --name nhanes-pg -d -p 8787:8787 -e 'CONTAINER_USER_USERNAME=test' -e 'CONTAINER_USER_PASSWORD=test' deepayansarkar/nhanes-postgresql:0.13.0
+docker run --rm --name nhanes-pg -d -p 8787:8787 -e 'CONTAINER_USER_USERNAME=test' -e 'CONTAINER_USER_PASSWORD=test' epiconnector/nhanes-postgresql:0.14.0
 ```
 
 This is the easiest way to get started. The various `-p` flags exposes
